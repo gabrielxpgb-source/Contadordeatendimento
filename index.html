@@ -139,12 +139,12 @@
   <!-- TELA INICIAL -->
   <div id="tela-inicio" class="screen active">
     <h1>Contador de Atendimentos</h1>
-    <p style="text-align:center; color: #777;">Versão 4.2 Web (Google Sheets Sync)</p>
+    <p style="text-align:center; color: #777;">Versão 8.2 WebServer (Developed by Gabriel Santos)</p>
     <div id="status-sync" class="status-sync">🔄 Carregando dados da nuvem...</div>
     
     <button class="btn btn-main" onclick="escolherTipo('consulta')">CONSULTA</button>
     <button class="btn btn-main" onclick="escolherTipo('sadt')">SADT</button>
-    <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="sincronizarComPlanilha()">🔄 Atualizar Dados da Planilha</button>
+    <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="sincronizarComPlanilha()">🔄 Atualizar Banco de Dados</button>
     
     <div id="debug-box" class="debug-box"></div>
   </div>
@@ -172,7 +172,7 @@
 
     <div class="bottom-bar">
       <button class="btn btn-danger" onclick="zerar()">Zerar</button>
-      <button class="btn btn-primary" onclick="imprimirComprovante()">Imprimir (Ctrl+P)</button>
+      <button class="btn btn-primary" onclick="imprimirComprovante()">Imprimir</button>
       <button class="btn btn-success" onclick="salvarArquivoTXT()">Baixar TXT</button>
       <button class="btn btn-secondary" onclick="navegar('tela-inicio')">Voltar</button>
     </div>
@@ -253,7 +253,7 @@
       dados.profissionais = { consulta: [], sadt: [] };
       dados.convenios = { consulta: [], sadt: [] };
 
-      debugLog(`Lendo ${rowsProf.length} linhas de Profissionais...`);
+      debugLog(`Carregando ${rowsProf.length} Profissionais...`);
 
       // Processa Profissionais
       for (let i = 1; i < rowsProf.length; i++) {
@@ -270,7 +270,7 @@
         }
       }
 
-      debugLog(`Lendo ${rowsConv.length} linhas de Convênios...`);
+      debugLog(`Carregando ${rowsConv.length} Convênios...`);
 
       // Processa Convênios
       for (let i = 1; i < rowsConv.length; i++) {
@@ -300,7 +300,7 @@
       localStorage.setItem('dados_sheets_cache', JSON.stringify(dados));
       
       if (statusEl) {
-        statusEl.innerText = "🟢 Dados sincronizados com sucesso!";
+        statusEl.innerText = "🟢 Dados sincronizados - Banco de Dados Atualizado";
         statusEl.style.color = "#28a745";
       }
     } catch (err) {
@@ -452,7 +452,8 @@
     linhas.push("      ∙STATUS DO LOTE∙\n");
     linhas.push("►PLANILHA - ►DIGITALIZADO\n");
     linhas.push("►ENVIADO - ►ARQUIVADO\n");
-    linhas.push("►byGЪ◄ 02/2026 Ver 4.2");
+    linhas.push("Ver 8.2 WebServer\n");
+    linhas.push("Dev. GЪ - Since 02/2026");
 
     return linhas.join("\n");
   }
