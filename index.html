@@ -12,6 +12,7 @@
       --success: #28a745;
       --danger: #dc3545;
       --text: #333333;
+      --qtd-colunas: 6; /* Padrão de 6 colunas na tela */
     }
 
     body {
@@ -23,7 +24,7 @@
     }
 
     .container {
-      max-width: 800px;
+      max-width: 1300px; /* Aumentado para aproveitar melhor telas horizontais */
       margin: 0 auto;
       background: var(--card-bg);
       padding: 20px;
@@ -80,7 +81,7 @@
 
     .grid-contadores {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      grid-template-columns: repeat(var(--qtd-colunas), 1fr); /* Colunas dinâmicas */
       gap: 10px;
       margin: 20px 0;
     }
@@ -153,6 +154,14 @@
   <div id="tela-contador" class="screen">
     <h2 id="titulo-tipo">Contador</h2>
     
+    <!-- Controle de Quantidade de Colunas -->
+    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 15px; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+      <span style="font-size: 13px; font-weight: bold; color: #555;">Colunas por linha:</span>
+      <button class="btn btn-secondary" style="padding: 2px 10px; font-size: 16px;" onclick="alterarColunas(-1)">-</button>
+      <span id="lbl-colunas" style="font-weight: bold; font-size: 14px; min-width: 20px; text-align: center;">6</span>
+      <button class="btn btn-secondary" style="padding: 2px 10px; font-size: 16px;" onclick="alterarColunas(1)">+</button>
+    </div>
+
     <div class="form-group">
       <label>Convênio:</label>
       <select id="select-convenio" onchange="selecionarConvenio()"></select>
@@ -194,6 +203,23 @@
   let tipoAtual = 'consulta';
   let valorAtual = 0.0;
   let contadores = {};
+
+  // Controle de colunas dinâmico
+  let colunasAtuais = parseInt(localStorage.getItem('pref_colunas')) || 6;
+
+  function aplicarColunas(qtd) {
+    colunasAtuais = Math.min(Math.max(qtd, 2), 12); // Limita entre 2 e 12 colunas
+    document.documentElement.style.setProperty('--qtd-colunas', colunasAtuais);
+    
+    const lbl = document.getElementById('lbl-colunas');
+    if (lbl) lbl.innerText = colunasAtuais;
+    
+    localStorage.setItem('pref_colunas', colunasAtuais);
+  }
+
+  function alterarColunas(delta) {
+    aplicarColunas(colunasAtuais + delta);
+  }
 
   function debugLog(txt) {
     const box = document.getElementById('debug-box');
@@ -449,7 +475,7 @@
     }
 
     linhas.push("─".repeat(29));
-    linhas.push("      ∙STATUS DO LOTE∙\n");
+    linhas.push("     ∙STATUS DO LOTE∙\n");
     linhas.push("►PLANILHA - ►DIGITALIZADO\n");
     linhas.push("►ENVIADO - ►ARQUIVADO\n");
     linhas.push("Ver 8.2 WebServer\n");
@@ -481,6 +507,9 @@
       }
     }
   });
+
+  // Aplica preferência de colunas ao iniciar
+  aplicarColunas(colunasAtuais);
 
   sincronizarComPlanilha();
 </script>
