@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contador v8.7 </title>
+  <title>Contador de Atendimentos - Web v8.7 (Sheets)</title>
 
   <!-- Biblioteca para Geração Rápida de QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -16,7 +16,7 @@
       --success: #28a745;
       --danger: #dc3545;
       --text: #333333;
-      --qtd-colunas: 10; /* Mantido padrão de 10 colunas */
+      --qtd-colunas: 10;
     }
 
     body {
@@ -90,7 +90,6 @@
       margin: 20px 0;
     }
 
-    /* Estilo Base do Card */
     .card-contador {
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -100,7 +99,6 @@
       transition: all 0.2s ease-in-out;
     }
 
-    /* Destaque Visual do Card quando Contado (>0) */
     .card-contador.contado {
       background-color: #e8f5e9 !important;
       border: 2px solid #28a745 !important;
@@ -118,7 +116,7 @@
 
     #comprovante-print { display: none; }
 
-    /* Estilização para Impressão Térmica */
+    /* Estilização Centralizada para Impressão Térmica */
     @media print {
       @page {
         size: auto;
@@ -147,17 +145,29 @@
       }
 
       .qrcode-container {
-        margin-top: 10px;
+        margin-top: 8px;
+        width: 100%;
         text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        display: block;
       }
 
-      .qrcode-container img {
-        margin: 5px auto;
-        display: block;
+      .qrcode-label {
+        font-size: 8pt;
+        margin-bottom: 4px;
+        text-align: center;
+        width: 100%;
+      }
+
+      #qrcode-target {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+      }
+
+      #qrcode-target img {
+        margin: 0 auto !important;
+        display: block !important;
       }
     }
   </style>
@@ -169,7 +179,7 @@
   <!-- TELA INICIAL -->
   <div id="tela-inicio" class="screen active">
     <h1>Contador de Atendimentos</h1>
-    <p style="text-align:center; color: #777;">Versão 8.3 WebServer (Developed by Gabriel Santos)</p>
+    <p style="text-align:center; color: #777;">Versão 8.4 WebServer (Developed by Gabriel Santos)</p>
     <div id="status-sync" class="status-sync">🔄 Carregando dados da nuvem...</div>
     
     <button class="btn btn-main" onclick="escolherTipo('consulta')">CONSULTA</button>
@@ -183,7 +193,6 @@
   <div id="tela-contador" class="screen">
     <h2 id="titulo-tipo">Contador</h2>
     
-    <!-- Controle de Quantidade de Colunas -->
     <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 15px; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
       <span style="font-size: 13px; font-weight: bold; color: #555;">Colunas por linha:</span>
       <button class="btn btn-secondary" style="padding: 2px 10px; font-size: 16px;" onclick="alterarColunas(-1)">-</button>
@@ -234,7 +243,6 @@
   let valorAtual = 0.0;
   let contadores = {};
 
-  // Padrão inicial de 10 colunas
   let colunasAtuais = parseInt(localStorage.getItem('pref_colunas')) || 10;
 
   function aplicarColunas(qtd) {
@@ -448,7 +456,6 @@
       
       qtdEl.innerText = contadores[nome];
 
-      // ALTERAÇÃO 2: Destaque visual verde se a contagem for maior que zero
       if (contadores[nome] > 0) {
         cardEl.classList.add('contado');
       } else {
@@ -472,7 +479,6 @@
       const el = document.getElementById(`qtd-${k}`);
       if (el) el.innerText = "0";
       
-      // Reseta a cor verde do card
       const cardEl = document.getElementById(`card-${k}`);
       if (cardEl) cardEl.classList.remove('contado');
     }
@@ -523,39 +529,36 @@
     linhas.push("     ∙STATUS DO LOTE∙\n");
     linhas.push("►PLANILHA - ►DIGITALIZADO\n");
     linhas.push("►ENVIADO - ►ARQUIVADO\n");
-    linhas.push("Ver 8.3 WebServer\n");
+    linhas.push("Ver 8.4 WebServer\n");
     linhas.push("Dev. GЪ - Since 02/2026");
 
     return linhas.join("\n");
   }
 
-  // ALTERAÇÃO 1: Geração do QR Code na Impressão
   function imprimirComprovante() {
     const texto = gerarTextoComprovante();
     const lote = document.getElementById('input-lote').value.trim();
     const container = document.getElementById('comprovante-print');
     
-    // Insere o texto no comprovante
     container.innerText = texto;
 
-    // Se houver número do lote, gera o QR Code no final do recibo
     if (lote) {
       const qrDiv = document.createElement('div');
       qrDiv.className = 'qrcode-container';
-      qrDiv.innerHTML = `<div style="font-size: 8pt; margin-top:5px;">LOTE: ${lote}</div><div id="qrcode-target"></div>`;
+      qrDiv.innerHTML = `<div class="qrcode-label">LOTE: ${lote}</div><div id="qrcode-target"></div>`;
       container.appendChild(qrDiv);
 
+      // Tamanho reduzido para 65px e perfeitamente centralizado
       new QRCode(document.getElementById("qrcode-target"), {
         text: lote,
-        width: 90,
-        height: 90,
+        width: 65,
+        height: 65,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
       });
     }
 
-    // Pequeno delay para garantir a renderização da imagem do QR Code antes de abrir a janela de impressão
     setTimeout(() => {
       window.print();
     }, 250);
