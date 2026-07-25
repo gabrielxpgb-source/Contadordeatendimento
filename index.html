@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Contador - Web v8.8</title>
+  <title>Contador Web v8.9</title>
 
   <!-- Biblioteca para Geração Rápida de QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -47,7 +47,7 @@
             "error": "#ffb4ab",
             "surface-container-high": "#282a2c",
             "secondary-fixed": "#6dfe9c",
-            "surface-container-highest": "#333537",
+            "surface-container-hover": "#333537",
             "primary-fixed": "#d6e3ff",
             "primary-container": "#4d96ff",
             "tertiary-fixed": "#ffdcbf",
@@ -160,10 +160,11 @@
         padding: 2mm 4mm;
         zoom: 170%;
         transform-origin: top left;
-        font-family: 'Consolas', 'Courier New', Courier, monospace;
+        font-family: 'Courier New', Courier, monospace;
         font-size: 8pt;
-        font-weight: 900;
+        font-weight: 700;
         line-height: 1.15;
+        white-space: pre;
         color: #000000 !important;
         background: #ffffff;
       }
@@ -203,7 +204,7 @@
   <header class="flex justify-between items-center px-6 py-4 w-full bg-surface-container-low border-b border-outline-variant sticky top-0 z-50">
     <div class="flex items-center gap-4 cursor-pointer" onclick="navegar('tela-inicio')">
       <span class="text-xl font-bold text-primary font-headline-md">CONTADOR</span>
-      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v8.7 WebServer</span>
+      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v8.9 WebServer</span>
     </div>
 
     <!-- Controles da TopBar (Colunas na tela de contador) -->
@@ -296,7 +297,7 @@
         </div>
         <div class="w-[1px] h-10 bg-outline-variant"></div>
         <div class="flex flex-col">
-          <span class="text-xs font-label-sm text-outline uppercase tracking-wider">Valor Total Estimado</span>
+          <span class="text-xs font-label-sm text-outline uppercase tracking-wider">Valor Total</span>
           <span class="text-2xl font-bold font-headline-lg text-secondary" id="lbl-valor">R$ 0,00</span>
         </div>
       </div>
@@ -643,19 +644,32 @@
         linhas.push(`Valor Un.: R$ ${valorAtual.toFixed(2)}`);
       }
 
-      linhas.push("¯".repeat(29));
-      linhas.push("Profissional   -   Quant.");
+      linhas.push("─".repeat(28));
+      linhas.push("Profissional           Quant.");
+      linhas.push("─".repeat(28));
 
       let totalQtd = 0;
+      const TAMANHO_LINHA = 28;
+      const TAMANHO_QTD = 4;
+
       for (const [nome, qtd] of Object.entries(contadores)) {
         if (qtd > 0) {
-          let nomeCurto = nome.length > 20 ? nome.substring(0, 18) + '..' : nome.padEnd(20, ' ');
-          linhas.push(`${nomeCurto} ${qtd}`);
+          const qtdStr = qtd.toString().padStart(TAMANHO_QTD, ' ');
+          const maxNomeLen = TAMANHO_LINHA - TAMANHO_QTD;
+
+          let nomeFormatado = nome;
+          if (nomeFormatado.length > maxNomeLen) {
+            nomeFormatado = nomeFormatado.substring(0, maxNomeLen - 2) + "..";
+          } else {
+            nomeFormatado = nomeFormatado.padEnd(maxNomeLen, ' ');
+          }
+
+          linhas.push(`${nomeFormatado}${qtdStr}`);
           totalQtd += qtd;
         }
       }
 
-      linhas.push("_".repeat(29));
+      linhas.push("─".repeat(28));
       let totalValor = totalQtd * valorAtual;
 
       if (valorAtual > 0) {
@@ -665,7 +679,7 @@
         linhas.push(`TOTAL: ${totalQtd} atendimentos`);
       }
 
-      linhas.push("─".repeat(29));
+      linhas.push("─".repeat(28));
       linhas.push("     ∙STATUS DO LOTE∙\n");
       linhas.push("►PLANILHA - ►DIGITALIZADO\n");
       linhas.push("►ENVIADO - ►ARQUIVADO\n");
