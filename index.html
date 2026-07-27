@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Contador & Conferência de Lote - Web v9.0</title>
+  <title>Contador & Conferência de Lote - Web v10.0</title>
 
   <!-- Biblioteca QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- PDF.js da Mozilla para leitura/extração de texto de PDF diretamente no navegador -->
+  <!-- PDF.js da Mozilla -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <!-- Tailwind CSS & Google Fonts -->
@@ -221,7 +221,7 @@
   <header class="flex justify-between items-center px-6 py-4 w-full bg-surface-container-low border-b border-outline-variant sticky top-0 z-50">
     <div class="flex items-center gap-4 cursor-pointer" onclick="navegar('tela-inicio')">
       <span class="text-xl font-bold text-primary font-headline-md">CONTADOR</span>
-      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v9.0 WebServer</span>
+      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v10.0 WebServer</span>
     </div>
 
     <!-- Controles de Colunas (Tela Contador) -->
@@ -267,7 +267,7 @@
             SADT
           </button>
 
-          <!-- NOVO BOTÃO DE CONFERÊNCIA DE LOTE -->
+          <!-- BOTÃO DE CONFERÊNCIA DE LOTE -->
           <button onclick="navegar('tela-conferencia')" class="w-full h-16 bg-secondary-container text-on-secondary-container hover:opacity-90 font-bold rounded-xl text-lg transition-all flex items-center justify-center gap-3 shadow-lg">
             <span class="material-symbols-outlined">fact_check</span>
             CONFERIR LOTE (PDF)
@@ -306,7 +306,7 @@
       <div id="grid-contadores" class="dynamic-grid"></div>
     </div>
 
-    <!-- TELA NOVE: CONFERÊNCIA DE LOTE POR PDF -->
+    <!-- TELA CONFERÊNCIA DE LOTE POR PDF -->
     <div id="tela-conferencia" class="screen">
       <div class="max-w-4xl mx-auto flex flex-col gap-6">
         
@@ -319,29 +319,44 @@
             </h2>
             <p class="text-sm text-on-surface-variant mt-1">Carregue o PDF da capa do lote e bipe as guias físicas para verificação automatizada.</p>
           </div>
-          <button onclick="navegar('tela-inicio')" class="px-5 py-2.5 bg-surface-container-highest hover:bg-outline-variant rounded-xl text-on-surface font-label-sm transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">arrow_back</span>
-            Voltar ao Início
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- BOTÃO LIMPAR -->
+            <button onclick="limparConferencia()" class="px-4 py-2.5 bg-error-container/40 hover:bg-error-container text-error border border-error/30 rounded-xl font-label-sm transition-all flex items-center gap-2" title="Limpar PDF e zera conferência">
+              <span class="material-symbols-outlined text-sm">delete_sweep</span>
+              Limpar
+            </button>
+            <button onclick="navegar('tela-inicio')" class="px-5 py-2.5 bg-surface-container-highest hover:bg-outline-variant rounded-xl text-on-surface font-label-sm transition-all flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">arrow_back</span>
+              Voltar
+            </button>
+          </div>
         </div>
 
-        <!-- Seção 1: Upload do PDF -->
+        <!-- Seção 1: Upload do PDF & Ações do Arquivo -->
         <div class="bg-surface-container p-6 rounded-2xl border border-outline-variant flex flex-col md:flex-row items-center justify-between gap-6">
           <div class="flex items-center gap-4 w-full md:w-auto">
             <div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined">picture_as_pdf</span>
             </div>
             <div>
-              <h3 class="font-bold text-on-surface text-base">Capa do Lote (PDF)</h3>
+              <h3 class="font-bold text-on-surface text-base" id="pdf-nome-lbl">Capa do Lote (PDF)</h3>
               <p class="text-xs text-on-surface-variant" id="pdf-status-desc">Nenhum arquivo carregado ainda</p>
             </div>
           </div>
 
-          <label class="w-full md:w-auto px-6 py-3.5 bg-primary text-on-primary font-bold font-label-md rounded-xl cursor-pointer hover:opacity-90 transition-all text-center flex items-center justify-center gap-2 shadow-md shrink-0">
-            <span class="material-symbols-outlined">upload_file</span>
-            Selecionar PDF do Lote
-            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="carregarPDFLote(event)">
-          </label>
+          <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+            <!-- BOTÃO COPIAR NOME DO PDF -->
+            <button id="btn-copiar-nome" onclick="copiarNomePDF()" class="hidden px-4 py-3.5 bg-surface-container-highest hover:bg-outline-variant text-primary font-bold font-label-md rounded-xl transition-all items-center gap-2 border border-outline-variant">
+              <span class="material-symbols-outlined text-sm">content_copy</span>
+              Copiar Nome
+            </button>
+
+            <label class="px-6 py-3.5 bg-primary text-on-primary font-bold font-label-md rounded-xl cursor-pointer hover:opacity-90 transition-all text-center flex items-center justify-center gap-2 shadow-md shrink-0">
+              <span class="material-symbols-outlined">upload_file</span>
+              Selecionar PDF do Lote
+              <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="carregarPDFLote(event)">
+            </label>
+          </div>
         </div>
 
         <!-- Área Principal de Verificação (Visível apenas após carregar PDF) -->
@@ -361,6 +376,21 @@
               <span class="text-xs text-outline font-label-sm uppercase">Guias Pendentes</span>
               <span class="text-3xl font-bold font-headline-lg text-tertiary" id="lbl-pendentes-pdf">0</span>
             </div>
+          </div>
+
+          <!-- BOTÃO CONTAR (TRANSIÇÃO DIRETA PARA MÓDULO DE CONTAGEM) -->
+          <div class="bg-surface-container-high p-4 rounded-2xl border border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary text-2xl">calculate</span>
+              <div>
+                <span class="font-bold text-on-surface text-sm block">Pronto para contar este lote?</span>
+                <span class="text-xs text-on-surface-variant block" id="lbl-convenio-detectado">Convênio detectado: Buscando...</span>
+              </div>
+            </div>
+            <button onclick="abrirModalContar()" class="w-full sm:w-auto px-6 py-3 bg-secondary text-on-secondary font-bold font-label-md rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg">
+              <span class="material-symbols-outlined">arrow_forward</span>
+              Contar Lote
+            </button>
           </div>
 
           <!-- Caixa de Entrada de Bipagem/Digitação com Animação Shake -->
@@ -405,6 +435,34 @@
     </div>
 
   </main>
+
+  <!-- MODAL DE SELEÇÃO TIPO LOTE (CONSULTA / SADT) -->
+  <div id="modal-contar" class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface-container-high border border-outline-variant rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-5">
+      <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+        <h3 class="text-lg font-bold text-on-surface font-headline-md flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">pin</span>
+          Selecione o Tipo do Lote
+        </h3>
+        <button onclick="fecharModalContar()" class="text-outline hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <p class="text-sm text-on-surface-variant">Qual é a modalidade deste lote de atendimentos?</p>
+
+      <div class="flex flex-col gap-3">
+        <button onclick="confirmarMigracaoContador('consulta')" class="w-full py-4 bg-primary-container text-on-primary-container hover:opacity-90 font-bold rounded-xl text-base transition-all flex items-center justify-center gap-2 shadow-md">
+          <span class="material-symbols-outlined">medical_services</span>
+          CONSULTA
+        </button>
+        <button onclick="confirmarMigracaoContador('sadt')" class="w-full py-4 bg-tertiary-container text-on-tertiary-container hover:opacity-90 font-bold rounded-xl text-base transition-all flex items-center justify-center gap-2 shadow-md">
+          <span class="material-symbols-outlined">biotech</span>
+          SADT
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Resumo Fixo & Barra de Ações do Contador -->
   <div id="summary-bar" class="fixed bottom-[48px] left-0 w-full z-40 px-6 pb-4 hidden">
@@ -473,8 +531,10 @@
     let contadores = {};
 
     // Estado da Conferência de Lote
-    let guiasLote = []; // Estrutura: [{ numero: '7700087100', conferida: false }]
+    let guiasLote = [];
     let filtroGuiaAtual = 'todas';
+    let nomeArquivoPdfSemExtensao = "";
+    let convenioDetectadoNoPdf = null; // Estrutura: { consultaIndex: N, sadtIndex: N, nome: "" }
 
     let colunasAtuais = parseInt(localStorage.getItem('pref_colunas')) || 10;
 
@@ -490,14 +550,6 @@
 
     function alterarColunas(delta) {
       aplicarColunas(colunasAtuais + delta);
-    }
-
-    function debugLog(txt) {
-      const box = document.getElementById('debug-box');
-      if (box) {
-        box.classList.remove('hidden');
-        box.innerHTML += txt + "<br>";
-      }
     }
 
     function parseCSVLine(line) {
@@ -536,8 +588,6 @@
 
     async function sincronizarComPlanilha() {
       const statusEl = document.getElementById('status-sync');
-      const debugEl = document.getElementById('debug-box');
-      if (debugEl) debugEl.innerHTML = '';
       
       if (statusEl) {
         statusEl.innerText = "🔄 Sincronizando dados com o Google Sheets...";
@@ -803,7 +853,7 @@
       linhas.push("     ∙STATUS DO LOTE∙\n");
       linhas.push("►PLANILHA - ►DIGITALIZADO\n");
       linhas.push("►ENVIADO - ►ARQUIVADO\n");
-      linhas.push("Ver 9.0 WebServer\n");
+      linhas.push("Ver 10.0 WebServer\n");
       linhas.push("Dev. GB - Since 02/2026");
 
       return linhas.join("\n");
@@ -847,15 +897,24 @@
     }
 
     /* ==========================================================================
-       LÓGICA DA CONFERÊNCIA DE LOTE (EXTRAÇÃO DE PDF & LEITURA)
+       LÓGICA DA CONFERÊNCIA DE LOTE (EXTRAÇÃO DE PDF, LEITURA & NOVAS FUNÇÕES)
        ========================================================================== */
 
     async function carregarPDFLote(event) {
       const file = event.target.files[0];
       if (!file) return;
 
+      // Armazena e trata o nome do arquivo (Remove .pdf)
+      nomeArquivoPdfSemExtensao = file.name.replace(/\.[^/.]+$/, "");
+
       const descEl = document.getElementById('pdf-status-desc');
-      descEl.innerText = "⏳ Extraindo números de guia do PDF...";
+      const nomeLbl = document.getElementById('pdf-nome-lbl');
+      const btnCopiar = document.getElementById('btn-copiar-nome');
+
+      nomeLbl.innerText = file.name;
+      descEl.innerText = "⏳ Extraindo dados do PDF...";
+      btnCopiar.classList.remove('hidden');
+      btnCopiar.classList.add('flex');
 
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -863,7 +922,6 @@
         
         let textoCompleto = "";
         
-        // Percorre todas as páginas extraindo texto
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
@@ -871,23 +929,23 @@
           textoCompleto += strings.join(" ") + "\n";
         }
 
-        // Expressão Regular para capturar números sequenciais (ex: 8 a 12 dígitos)
+        // 1. Extração dos números de guia
         const regexNumeros = /\b\d{8,12}\b/g;
         const matches = textoCompleto.match(regexNumeros) || [];
-        
-        // Remove duplicatas mantendo ordem
         const numerosUnicos = [...new Set(matches)];
 
         if (numerosUnicos.length === 0) {
-          alert("Nenhum número de guia foi encontrado no PDF. Certifique-se de que o arquivo possui texto/OCR.");
+          alert("Nenhum número de guia foi encontrado no PDF. Certifique-se de que o arquivo possui OCR/Texto.");
           descEl.innerText = "❌ Falha: Nenhuma guia identificada.";
           return;
         }
 
-        // Popula o array global de guias
         guiasLote = numerosUnicos.map(num => ({ numero: num, conferida: false }));
 
-        descEl.innerText = `🟢 Arquivo: ${file.name} (${guiasLote.length} guias encontradas)`;
+        // 2. Detecção automática do Convênio no texto do PDF
+        identificarConvenioNoTexto(textoCompleto);
+
+        descEl.innerText = `🟢 Guias encontradas: ${guiasLote.length}`;
         document.getElementById('area-verificacao').classList.remove('hidden');
         document.getElementById('area-verificacao').classList.add('flex');
 
@@ -900,9 +958,108 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao ler arquivo PDF. Verifique se o arquivo está corrompido.");
+        alert("Erro ao ler arquivo PDF.");
         descEl.innerText = "❌ Erro na leitura do PDF.";
       }
+    }
+
+    function identificarConvenioNoTexto(textoPdf) {
+      const textoLower = textoPdf.toLowerCase();
+      convenioDetectadoNoPdf = null;
+
+      const lblConvenio = document.getElementById('lbl-convenio-detectado');
+
+      // Procura primeiro nos convênios de Consulta
+      let idxConsulta = dados.convenios.consulta.findIndex(c => textoLower.includes(c.nome.toLowerCase()));
+      // Procura nos convênios de SADT
+      let idxSadt = dados.convenios.sadt.findIndex(c => textoLower.includes(c.nome.toLowerCase()));
+
+      if (idxConsulta !== -1 || idxSadt !== -1) {
+        const nomeConvenio = idxConsulta !== -1 ? dados.convenios.consulta[idxConsulta].nome : dados.convenios.sadt[idxSadt].nome;
+        convenioDetectadoNoPdf = {
+          consultaIndex: idxConsulta,
+          sadtIndex: idxSadt,
+          nome: nomeConvenio
+        };
+        lblConvenio.innerText = `Convênio detectado: ${nomeConvenio}`;
+        lblConvenio.className = "text-xs text-secondary font-bold block";
+      } else {
+        lblConvenio.innerText = "Convênio detectado: Não identificado automaticamente";
+        lblConvenio.className = "text-xs text-tertiary block";
+      }
+    }
+
+    function copiarNomePDF() {
+      if (!nomeArquivoPdfSemExtensao) return;
+
+      navigator.clipboard.writeText(nomeArquivoPdfSemExtensao).then(() => {
+        const btn = document.getElementById('btn-copiar-nome');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm text-secondary">check</span> Copiado!`;
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+        }, 2000);
+      });
+    }
+
+    function abrirModalContar() {
+      document.getElementById('modal-contar').classList.remove('hidden');
+      document.getElementById('modal-contar').classList.add('flex');
+    }
+
+    function fecharModalContar() {
+      document.getElementById('modal-contar').classList.add('hidden');
+      document.getElementById('modal-contar').classList.remove('flex');
+    }
+
+    function confirmarMigracaoContador(tipo) {
+      fecharModalContar();
+      escolherTipo(tipo);
+
+      // Preenche o Lote com o nome do PDF sem extensão
+      const inputLote = document.getElementById('input-lote');
+      if (inputLote && nomeArquivoPdfSemExtensao) {
+        inputLote.value = nomeArquivoPdfSemExtensao;
+      }
+
+      // Preenche o Convênio se tiver sido detectado
+      if (convenioDetectadoNoPdf) {
+        const select = document.getElementById('select-convenio');
+        const idx = tipo === 'consulta' ? convenioDetectadoNoPdf.consultaIndex : convenioDetectadoNoPdf.sadtIndex;
+        if (idx !== -1 && idx !== null && idx !== undefined) {
+          select.value = idx;
+          selecionarConvenio();
+        }
+      }
+    }
+
+    function limparConferencia() {
+      if (guiasLote.length > 0 || nomeArquivoPdfSemExtensao) {
+        if (!confirm("Deseja realmente limpar os dados do PDF e zerar a conferência?")) {
+          return;
+        }
+      }
+
+      guiasLote = [];
+      nomeArquivoPdfSemExtensao = "";
+      convenioDetectadoNoPdf = null;
+
+      document.getElementById('pdf-file-input').value = "";
+      document.getElementById('pdf-nome-lbl').innerText = "Capa do Lote (PDF)";
+      document.getElementById('pdf-status-desc').innerText = "Nenhum arquivo carregado ainda";
+      
+      const btnCopiar = document.getElementById('btn-copiar-nome');
+      btnCopiar.classList.add('hidden');
+      btnCopiar.classList.remove('flex');
+
+      document.getElementById('area-verificacao').classList.add('hidden');
+      document.getElementById('area-verificacao').classList.remove('flex');
+
+      document.getElementById('input-bipador').value = "";
+      document.getElementById('msg-feedback').innerText = "";
+
+      atualizarDashboardConferencia();
+      renderizarListaGuias();
     }
 
     function atualizarDashboardConferencia() {
@@ -974,11 +1131,9 @@
 
       if (idx !== -1) {
         if (guiasLote[idx].conferida) {
-          // Já foi conferida
           msg.innerText = `⚠️ Guia ${valor} JÁ FOI CONFERIDA anteriormente!`;
           msg.className = "text-xs font-label-sm text-tertiary font-bold";
         } else {
-          // Sucesso
           guiasLote[idx].conferida = true;
           msg.innerText = `✅ Guia ${valor} CONFERIDA com sucesso!`;
           msg.className = "text-xs font-label-sm text-secondary font-bold";
@@ -987,7 +1142,6 @@
           renderizarListaGuias();
         }
       } else {
-        // Não encontrada - Aplica Animação SHAKE
         msg.innerText = `❌ ATENÇÃO: Guia ${valor} NÃO ENCONTRADA na capa do lote!`;
         msg.className = "text-xs font-label-sm text-error font-bold";
 
