@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Contador & Conferência de Lote - Web v10.1</title>
+  <title>Contador & Conferência de Lote - Web v10.2</title>
 
   <!-- Biblioteca QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -157,11 +157,11 @@
 
     #comprovante-print { display: none; }
 
-    /* Impressão Térmica com Zoom Ajustado em 150% */
+    /* Impressão Térmica Otimizada (Ajuste de Margem e Espaço de Sobra Reduzido) */
     @media print {
       @page {
         size: auto;
-        margin: 0mm 0mm 0mm 1mm;
+        margin: 0mm 0mm 0mm 0mm; /* Zerado para evitar avanço extra */
       }
 
       body * { visibility: hidden; }
@@ -174,8 +174,9 @@
         top: 0;
         width: 100%;
         max-width: 80mm;
-        padding: 2mm 4mm;
-        zoom: 150%; /* Ajuste perfeito de escala para impressora térmica */
+        padding: 2mm 2mm 0mm 2mm; /* Padding inferior zerado */
+        margin-bottom: 0 !important;
+        zoom: 150%; 
         transform-origin: top left;
         font-family: 'Courier New', Courier, monospace;
         font-size: 8pt;
@@ -187,7 +188,9 @@
       }
 
       .qrcode-container {
-        margin-top: 8px;
+        margin-top: 4px;
+        margin-bottom: 0px !important;
+        padding-bottom: 0px !important;
         width: 100%;
         text-align: center;
         display: block;
@@ -195,7 +198,7 @@
 
       .qrcode-label {
         font-size: 8pt;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         text-align: center;
         width: 100%;
       }
@@ -205,6 +208,7 @@
         justify-content: center;
         align-items: center;
         width: 100%;
+        margin-bottom: 0 !important;
       }
 
       #qrcode-target img {
@@ -221,7 +225,7 @@
   <header class="flex justify-between items-center px-6 py-4 w-full bg-surface-container-low border-b border-outline-variant sticky top-0 z-50">
     <div class="flex items-center gap-4 cursor-pointer" onclick="navegar('tela-inicio')">
       <span class="text-xl font-bold text-primary font-headline-md">CONTADOR</span>
-      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v10.1 WebServer</span>
+      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v10.2 WebServer</span>
     </div>
 
     <!-- Controles de Colunas (Tela Contador) -->
@@ -320,7 +324,6 @@
             <p class="text-sm text-on-surface-variant mt-1">Carregue o PDF da capa do lote e bipe as guias físicas para verificação automatizada.</p>
           </div>
           <div class="flex items-center gap-2">
-            <!-- BOTÃO LIMPAR -->
             <button onclick="limparConferencia(true)" class="px-4 py-2.5 bg-error-container/40 hover:bg-error-container text-error border border-error/30 rounded-xl font-label-sm transition-all flex items-center gap-2" title="Limpar PDF e zera conferência">
               <span class="material-symbols-outlined text-sm">delete_sweep</span>
               Limpar
@@ -345,7 +348,6 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-            <!-- BOTÃO COPIAR NOME DO PDF -->
             <button id="btn-copiar-nome" onclick="copiarNomePDF()" class="hidden px-4 py-3.5 bg-surface-container-highest hover:bg-outline-variant text-primary font-bold font-label-md rounded-xl transition-all items-center gap-2 border border-outline-variant">
               <span class="material-symbols-outlined text-sm">content_copy</span>
               Copiar Nome
@@ -359,7 +361,7 @@
           </div>
         </div>
 
-        <!-- Área Principal de Verificação (Visível apenas após carregar PDF) -->
+        <!-- Área Principal de Verificação -->
         <div id="area-verificacao" class="hidden flex-col gap-6">
           
           <!-- Placar e Estatísticas -->
@@ -378,7 +380,7 @@
             </div>
           </div>
 
-          <!-- BOTÃO CONTAR (TRANSIÇÃO DIRETA PARA MÓDULO DE CONTAGEM) -->
+          <!-- Transição para Módulo de Contagem -->
           <div class="bg-surface-container-high p-4 rounded-2xl border border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-primary text-2xl">calculate</span>
@@ -393,7 +395,7 @@
             </button>
           </div>
 
-          <!-- Caixa de Entrada de Bipagem/Digitação com Animação Shake -->
+          <!-- Caixa de Bipagem/Digitação -->
           <div class="bg-surface-container-high p-6 rounded-2xl border border-outline-variant shadow-md flex flex-col gap-3 transition-all" id="box-bipador">
             <label class="text-xs font-label-sm text-primary font-bold uppercase tracking-wider flex items-center gap-2">
               <span class="material-symbols-outlined text-sm">barcode_reader</span>
@@ -416,7 +418,6 @@
                 Listagem de Guias do Lote
               </h4>
               
-              <!-- Filtros de Visualização -->
               <div class="flex gap-2">
                 <button onclick="filtrarListaGuias('todas')" id="btn-filtro-todas" class="px-3 py-1.5 rounded-lg text-xs font-label-sm bg-primary text-on-primary font-bold">Todas</button>
                 <button onclick="filtrarListaGuias('pendentes')" id="btn-filtro-pendentes" class="px-3 py-1.5 rounded-lg text-xs font-label-sm bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant">Pendentes</button>
@@ -424,10 +425,7 @@
               </div>
             </div>
 
-            <!-- Grid com Scroll das Guias -->
-            <div id="grid-guias-pdf" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto pr-2">
-              <!-- Elementos inseridos dinamicamente -->
-            </div>
+            <div id="grid-guias-pdf" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto pr-2"></div>
           </div>
 
         </div>
@@ -436,7 +434,7 @@
 
   </main>
 
-  <!-- MODAL DE SELEÇÃO TIPO LOTE (CONSULTA / SADT) -->
+  <!-- MODAL DE SELEÇÃO TIPO LOTE -->
   <div id="modal-contar" class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-surface-container-high border border-outline-variant rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-5">
       <div class="flex justify-between items-center border-b border-outline-variant pb-3">
@@ -464,7 +462,7 @@
     </div>
   </div>
 
-  <!-- Resumo Fixo & Barra de Ações do Contador -->
+  <!-- Resumo Fixo & Barra de Ações -->
   <div id="summary-bar" class="fixed bottom-[48px] left-0 w-full z-40 px-6 pb-4 hidden">
     <div class="max-w-7xl mx-auto glass-summary rounded-2xl shadow-2xl border border-outline-variant p-6 flex flex-col md:flex-row justify-between items-center gap-6">
       <div class="flex items-center gap-8">
@@ -515,7 +513,6 @@
   <div id="comprovante-print"></div>
 
   <script>
-    // Inicialização da biblioteca PDF.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     const URL_PROFISSIONAIS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRCSnS7sXbLE0_zzysCTqMOpKKP6x1U1P_ruWHK8hF3RGmOGcUYJK4DoMRYXQxlGjTR4uaeSes1c4u/pub?gid=0&single=true&output=csv";
@@ -530,7 +527,6 @@
     let valorAtual = 0.0;
     let contadores = {};
 
-    // Estado da Conferência de Lote
     let guiasLote = [];
     let filtroGuiaAtual = 'todas';
     let nomeArquivoPdfSemExtensao = "";
@@ -777,7 +773,7 @@
       document.getElementById('lbl-valor').innerText = `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
-    // BOTÃO ZERAR ATUALIZADO: Limpa a tela do contador E a tela de Conferência de Guia
+    // BOTÃO ZERAR MANTÉM O CONVÊNIO SELECIONADO
     function zerar() {
       if(confirm('Deseja zerar todos os contadores e limpar a tela de conferência de guias?')) {
         for (let k in contadores) {
@@ -792,23 +788,24 @@
           }
           if (el) el.classList.remove('text-active');
         }
+        
         document.getElementById('input-lote').value = '';
-        document.getElementById('select-convenio').value = '';
-        valorAtual = 0.0;
+        // NOTA: O convênio e o valorAtual NÃO são resetados a pedido!
         atualizarTotais();
 
-        // Limpa também a tela de conferência
+        // Limpa a tela de conferência
         limparConferencia(false);
       }
     }
 
+    // Geração do texto compactado para evitar sobra de papel
     function gerarTextoComprovante() {
       const agora = new Date().toLocaleString('pt-BR');
       const lote = document.getElementById('input-lote').value.trim();
       const idxConv = document.getElementById('select-convenio').value;
       
       let linhas = [];
-      linhas.push("≈RESUMO ATENDIMENTOS");
+      linhas.push("RESUMO ATENDIMENTOS");
       linhas.push(`Data: ${agora}`);
       linhas.push(`Tipo: ${tipoAtual.toUpperCase()}`);
       if (lote) linhas.push(`Lote: ${lote}`);
@@ -855,10 +852,10 @@
       }
 
       linhas.push("─".repeat(28));
-      linhas.push("     ∙STATUS DO LOTE∙\n");
-      linhas.push("►PLANILHA - ►DIGITALIZADO\n");
-      linhas.push("►ENVIADO - ►ARQUIVADO\n");
-      linhas.push("Ver 10.1 WebServer\n");
+      linhas.push("     STATUS DO LOTE");
+      linhas.push("►PLANILHA - ►DIGITALIZADO");
+      linhas.push("►ENVIADO - ►ARQUIVADO");
+      linhas.push("Ver 10.2 WebServer");
       linhas.push("Dev. GB - Since 02/2026");
 
       return linhas.join("\n");
@@ -879,8 +876,8 @@
 
         new QRCode(document.getElementById("qrcode-target"), {
           text: lote,
-          width: 65,
-          height: 65,
+          width: 60,
+          height: 60,
           colorDark: "#000000",
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.H
@@ -902,14 +899,13 @@
     }
 
     /* ==========================================================================
-       LÓGICA DA CONFERÊNCIA DE LOTE (EXTRAÇÃO DE PDF, LEITURA & AÇÕES)
+       LÓGICA DA CONFERÊNCIA DE LOTE
        ========================================================================== */
 
     async function carregarPDFLote(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      // Armazena e trata o nome do arquivo (Remove .pdf)
       nomeArquivoPdfSemExtensao = file.name.replace(/\.[^/.]+$/, "");
 
       const descEl = document.getElementById('pdf-status-desc');
@@ -934,7 +930,6 @@
           textoCompleto += strings.join(" ") + "\n";
         }
 
-        // Extração dos números de guia
         const regexNumeros = /\b\d{8,12}\b/g;
         const matches = textoCompleto.match(regexNumeros) || [];
         const numerosUnicos = [...new Set(matches)];
@@ -992,7 +987,6 @@
       fecharModalContar();
       escolherTipo(tipo);
 
-      // Preenche o Lote com o nome do PDF sem extensão
       const inputLote = document.getElementById('input-lote');
       if (inputLote && nomeArquivoPdfSemExtensao) {
         inputLote.value = nomeArquivoPdfSemExtensao;
