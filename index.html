@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Contador & Conferência de Lote - Web v10.0</title>
+  <title>Contador & Conferência de Lote - Web v10.1</title>
 
   <!-- Biblioteca QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -157,7 +157,7 @@
 
     #comprovante-print { display: none; }
 
-    /* Impressão Térmica */
+    /* Impressão Térmica com Zoom Ajustado em 150% */
     @media print {
       @page {
         size: auto;
@@ -175,7 +175,7 @@
         width: 100%;
         max-width: 80mm;
         padding: 2mm 4mm;
-        zoom: 150%;
+        zoom: 150%; /* Ajuste perfeito de escala para impressora térmica */
         transform-origin: top left;
         font-family: 'Courier New', Courier, monospace;
         font-size: 8pt;
@@ -221,7 +221,7 @@
   <header class="flex justify-between items-center px-6 py-4 w-full bg-surface-container-low border-b border-outline-variant sticky top-0 z-50">
     <div class="flex items-center gap-4 cursor-pointer" onclick="navegar('tela-inicio')">
       <span class="text-xl font-bold text-primary font-headline-md">CONTADOR</span>
-      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v10.0 WebServer</span>
+      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v10.1 WebServer</span>
     </div>
 
     <!-- Controles de Colunas (Tela Contador) -->
@@ -321,7 +321,7 @@
           </div>
           <div class="flex items-center gap-2">
             <!-- BOTÃO LIMPAR -->
-            <button onclick="limparConferencia()" class="px-4 py-2.5 bg-error-container/40 hover:bg-error-container text-error border border-error/30 rounded-xl font-label-sm transition-all flex items-center gap-2" title="Limpar PDF e zera conferência">
+            <button onclick="limparConferencia(true)" class="px-4 py-2.5 bg-error-container/40 hover:bg-error-container text-error border border-error/30 rounded-xl font-label-sm transition-all flex items-center gap-2" title="Limpar PDF e zera conferência">
               <span class="material-symbols-outlined text-sm">delete_sweep</span>
               Limpar
             </button>
@@ -384,7 +384,7 @@
               <span class="material-symbols-outlined text-primary text-2xl">calculate</span>
               <div>
                 <span class="font-bold text-on-surface text-sm block">Pronto para contar este lote?</span>
-                <span class="text-xs text-on-surface-variant block" id="lbl-convenio-detectado">Convênio detectado: Buscando...</span>
+                <span class="text-xs text-on-surface-variant block" id="lbl-convenio-detectado">Convênio detectado: Não identificado automaticamente (Pendência)</span>
               </div>
             </div>
             <button onclick="abrirModalContar()" class="w-full sm:w-auto px-6 py-3 bg-secondary text-on-secondary font-bold font-label-md rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg">
@@ -534,7 +534,6 @@
     let guiasLote = [];
     let filtroGuiaAtual = 'todas';
     let nomeArquivoPdfSemExtensao = "";
-    let convenioDetectadoNoPdf = null; // Estrutura: { consultaIndex: N, sadtIndex: N, nome: "" }
 
     let colunasAtuais = parseInt(localStorage.getItem('pref_colunas')) || 10;
 
@@ -778,8 +777,9 @@
       document.getElementById('lbl-valor').innerText = `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
+    // BOTÃO ZERAR ATUALIZADO: Limpa a tela do contador E a tela de Conferência de Guia
     function zerar() {
-      if(confirm('Deseja zerar todos os contadores?')) {
+      if(confirm('Deseja zerar todos os contadores e limpar a tela de conferência de guias?')) {
         for (let k in contadores) {
           contadores[k] = 0;
           const el = document.getElementById(`qtd-${k}`);
@@ -793,7 +793,12 @@
           if (el) el.classList.remove('text-active');
         }
         document.getElementById('input-lote').value = '';
+        document.getElementById('select-convenio').value = '';
+        valorAtual = 0.0;
         atualizarTotais();
+
+        // Limpa também a tela de conferência
+        limparConferencia(false);
       }
     }
 
@@ -853,7 +858,7 @@
       linhas.push("     ∙STATUS DO LOTE∙\n");
       linhas.push("►PLANILHA - ►DIGITALIZADO\n");
       linhas.push("►ENVIADO - ►ARQUIVADO\n");
-      linhas.push("Ver 10.0 WebServer\n");
+      linhas.push("Ver 10.1 WebServer\n");
       linhas.push("Dev. GB - Since 02/2026");
 
       return linhas.join("\n");
@@ -897,7 +902,7 @@
     }
 
     /* ==========================================================================
-       LÓGICA DA CONFERÊNCIA DE LOTE (EXTRAÇÃO DE PDF, LEITURA & NOVAS FUNÇÕES)
+       LÓGICA DA CONFERÊNCIA DE LOTE (EXTRAÇÃO DE PDF, LEITURA & AÇÕES)
        ========================================================================== */
 
     async function carregarPDFLote(event) {
@@ -929,7 +934,7 @@
           textoCompleto += strings.join(" ") + "\n";
         }
 
-        // 1. Extração dos números de guia
+        // Extração dos números de guia
         const regexNumeros = /\b\d{8,12}\b/g;
         const matches = textoCompleto.match(regexNumeros) || [];
         const numerosUnicos = [...new Set(matches)];
@@ -941,9 +946,6 @@
         }
 
         guiasLote = numerosUnicos.map(num => ({ numero: num, conferida: false }));
-
-        // 2. Detecção automática do Convênio no texto do PDF
-        identificarConvenioNoTexto(textoCompleto);
 
         descEl.innerText = `🟢 Guias encontradas: ${guiasLote.length}`;
         document.getElementById('area-verificacao').classList.remove('hidden');
@@ -960,32 +962,6 @@
         console.error(err);
         alert("Erro ao ler arquivo PDF.");
         descEl.innerText = "❌ Erro na leitura do PDF.";
-      }
-    }
-
-    function identificarConvenioNoTexto(textoPdf) {
-      const textoLower = textoPdf.toLowerCase();
-      convenioDetectadoNoPdf = null;
-
-      const lblConvenio = document.getElementById('lbl-convenio-detectado');
-
-      // Procura primeiro nos convênios de Consulta
-      let idxConsulta = dados.convenios.consulta.findIndex(c => textoLower.includes(c.nome.toLowerCase()));
-      // Procura nos convênios de SADT
-      let idxSadt = dados.convenios.sadt.findIndex(c => textoLower.includes(c.nome.toLowerCase()));
-
-      if (idxConsulta !== -1 || idxSadt !== -1) {
-        const nomeConvenio = idxConsulta !== -1 ? dados.convenios.consulta[idxConsulta].nome : dados.convenios.sadt[idxSadt].nome;
-        convenioDetectadoNoPdf = {
-          consultaIndex: idxConsulta,
-          sadtIndex: idxSadt,
-          nome: nomeConvenio
-        };
-        lblConvenio.innerText = `Convênio detectado: ${nomeConvenio}`;
-        lblConvenio.className = "text-xs text-secondary font-bold block";
-      } else {
-        lblConvenio.innerText = "Convênio detectado: Não identificado automaticamente";
-        lblConvenio.className = "text-xs text-tertiary block";
       }
     }
 
@@ -1021,20 +997,10 @@
       if (inputLote && nomeArquivoPdfSemExtensao) {
         inputLote.value = nomeArquivoPdfSemExtensao;
       }
-
-      // Preenche o Convênio se tiver sido detectado
-      if (convenioDetectadoNoPdf) {
-        const select = document.getElementById('select-convenio');
-        const idx = tipo === 'consulta' ? convenioDetectadoNoPdf.consultaIndex : convenioDetectadoNoPdf.sadtIndex;
-        if (idx !== -1 && idx !== null && idx !== undefined) {
-          select.value = idx;
-          selecionarConvenio();
-        }
-      }
     }
 
-    function limparConferencia() {
-      if (guiasLote.length > 0 || nomeArquivoPdfSemExtensao) {
+    function limparConferencia(solicitarConfirmacao = true) {
+      if (solicitarConfirmacao && (guiasLote.length > 0 || nomeArquivoPdfSemExtensao)) {
         if (!confirm("Deseja realmente limpar os dados do PDF e zerar a conferência?")) {
           return;
         }
@@ -1042,7 +1008,6 @@
 
       guiasLote = [];
       nomeArquivoPdfSemExtensao = "";
-      convenioDetectadoNoPdf = null;
 
       document.getElementById('pdf-file-input').value = "";
       document.getElementById('pdf-nome-lbl').innerText = "Capa do Lote (PDF)";
