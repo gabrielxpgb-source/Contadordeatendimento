@@ -160,17 +160,15 @@
     /* ESTILO DE IMPRESSÃO ORIGINAL MANTIDO */
     @media print {
       body * { visibility: hidden; }
-      #comprovante-print, #comprovante-print * { visibility: visible; }
-
-      #comprovante-print {
+            #comprovante-print {
         display: block !important;
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
         max-width: 80mm;
-        padding: 2mm;
-        zoom: 150%; 
+        padding: 2mm 4mm;
+        zoom: 150%;
         transform-origin: top left;
         font-family: 'Courier New', Courier, monospace;
         font-size: 8pt;
@@ -182,7 +180,7 @@
       }
 
       .qrcode-container {
-        margin-top: 4px;
+        margin-top: 8px;
         width: 100%;
         text-align: center;
         display: block;
@@ -190,7 +188,7 @@
 
       .qrcode-label {
         font-size: 8pt;
-        margin-bottom: 2px;
+        margin-bottom: 4px;
         text-align: center;
         width: 100%;
       }
