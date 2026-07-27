@@ -1088,19 +1088,25 @@
       const input = document.getElementById('input-bipador');
       const box = document.getElementById('box-bipador');
       const msg = document.getElementById('msg-feedback');
-      const valor = input.value.trim();
+      let valor = input.value.trim();
 
       if (!valor) return;
 
-      const idx = guiasLote.findIndex(g => g.numero === valor);
+      // TRATAMENTO DE PREFIXO: Permite pesquisar a guia ignorando prefixos comuns ou buscando correspondência exata
+      let idx = guiasLote.findIndex(g => g.numero === valor);
+      
+      if (idx === -1) {
+        // Se não achou exato, tenta localizar se a guia termina com o valor bipado ou se o valor contiver o número cadastrado
+        idx = guiasLote.findIndex(g => g.numero.endsWith(valor) || valor.endsWith(g.numero));
+      }
 
       if (idx !== -1) {
         if (guiasLote[idx].conferida) {
-          msg.innerText = `⚠️ Guia ${valor} JÁ FOI CONFERIDA anteriormente!`;
+          msg.innerText = `⚠️ Guia ${guiasLote[idx].numero} JÁ FOI CONFERIDA anteriormente!`;
           msg.className = "text-xs font-label-sm text-tertiary font-bold";
         } else {
           guiasLote[idx].conferida = true;
-          msg.innerText = `✅ Guia ${valor} CONFERIDA com sucesso!`;
+          msg.innerText = `✅ Guia ${guiasLote[idx].numero} CONFERIDA com sucesso!`;
           msg.className = "text-xs font-label-sm text-secondary font-bold";
           
           atualizarDashboardConferencia();
