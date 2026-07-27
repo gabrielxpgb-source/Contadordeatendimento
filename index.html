@@ -155,6 +155,15 @@
       box-shadow: 0 0 15px rgba(255, 180, 171, 0.4);
     }
 
+    /* Toggle Switch Customizado */
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #4de082;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #00b55d;
+    }
+
     #comprovante-print { display: none; }
 
     /* Impressão Térmica com Zoom Ajustado em 150% */
@@ -175,7 +184,7 @@
         width: 100%;
         max-width: 80mm;
         padding: 2mm 4mm;
-        zoom: 150%; /* Ajuste perfeito de escala para impressora térmica */
+        zoom: 150%;
         transform-origin: top left;
         font-family: 'Courier New', Courier, monospace;
         font-size: 8pt;
@@ -378,7 +387,7 @@
             </div>
           </div>
 
-          <!-- BOTÃO CONTAR (TRANSIÇÃO DIRETA PARA MÓDULO DE CONTAGEM) -->
+          <!-- BOTÃO CONTAR -->
           <div class="bg-surface-container-high p-4 rounded-2xl border border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-primary text-2xl">calculate</span>
@@ -393,12 +402,32 @@
             </button>
           </div>
 
-          <!-- Caixa de Entrada de Bipagem/Digitação com Animação Shake -->
-          <div class="bg-surface-container-high p-6 rounded-2xl border border-outline-variant shadow-md flex flex-col gap-3 transition-all" id="box-bipador">
-            <label class="text-xs font-label-sm text-primary font-bold uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm">barcode_reader</span>
-              Digitar ou Bipar Código da Guia
-            </label>
+          <!-- Caixa de Entrada de Bipagem/Digitação + SWITCH DE PREFIXO -->
+          <div class="bg-surface-container-high p-6 rounded-2xl border border-outline-variant shadow-md flex flex-col gap-4 transition-all" id="box-bipador">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-outline-variant/50">
+              <label class="text-xs font-label-sm text-primary font-bold uppercase tracking-wider flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">barcode_reader</span>
+                Digitar ou Bipar Código da Guia
+              </label>
+
+              <!-- SWITCH E INPUT DE PREFIXO -->
+              <div class="flex items-center gap-3 bg-surface-container px-3 py-1.5 rounded-xl border border-outline-variant">
+                <div class="flex items-center gap-2">
+                  <label for="switch-prefixo" class="text-xs font-label-sm text-on-surface-variant cursor-pointer select-none">Inserir Prefixo</label>
+                  <div class="relative inline-block w-10 align-middle select-none">
+                    <input type="checkbox" id="switch-prefixo" class="sr-only peer" onchange="togglePrefixo(this.checked)">
+                    <div class="w-10 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+                  </div>
+                </div>
+
+                <div id="container-input-prefixo" class="hidden items-center gap-1 border-l border-outline-variant pl-3">
+                  <span class="text-xs text-outline font-label-sm">Prefixo:</span>
+                  <input type="text" id="input-prefixo-val" value="20" class="w-14 h-8 px-2 bg-surface-container-high border border-outline-variant rounded-lg text-xs font-mono text-center text-primary font-bold focus:border-primary focus:ring-0">
+                </div>
+              </div>
+            </div>
+
             <div class="flex gap-3">
               <input type="text" id="input-bipador" placeholder="Insira o número da guia e pressione ENTER..." class="flex-grow h-14 px-4 bg-surface-container border border-outline-variant rounded-xl focus:border-primary focus:ring-0 transition-all font-mono text-lg text-on-surface" onkeydown="processarBipagem(event)">
               <button onclick="executarBipagemManual()" class="px-6 bg-secondary text-on-secondary font-bold font-label-md rounded-xl hover:opacity-90 transition-all flex items-center gap-2">
@@ -777,7 +806,6 @@
       document.getElementById('lbl-valor').innerText = `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
-    // BOTÃO ZERAR ATUALIZADO: Limpa a tela do contador E a tela de Conferência de Guia
     function zerar() {
       if(confirm('Deseja zerar todos os contadores e limpar a tela de conferência de guias?')) {
         for (let k in contadores) {
@@ -797,7 +825,6 @@
         valorAtual = 0.0;
         atualizarTotais();
 
-        // Limpa também a tela de conferência
         limparConferencia(false);
       }
     }
@@ -808,7 +835,7 @@
       const idxConv = document.getElementById('select-convenio').value;
       
       let linhas = [];
-      linhas.push("≈RESUMO ATENDIMENTOS");
+      linhas.push("RESUMO ATENDIMENTOS");
       linhas.push(`Data: ${agora}`);
       linhas.push(`Tipo: ${tipoAtual.toUpperCase()}`);
       if (lote) linhas.push(`Lote: ${lote}`);
@@ -855,7 +882,7 @@
       }
 
       linhas.push("─".repeat(28));
-      linhas.push("     ∙STATUS DO LOTE∙\n");
+      linhas.push("     STATUS DO LOTE\n");
       linhas.push("►PLANILHA - ►DIGITALIZADO\n");
       linhas.push("►ENVIADO - ►ARQUIVADO\n");
       linhas.push("Ver 10.1 WebServer\n");
@@ -902,14 +929,24 @@
     }
 
     /* ==========================================================================
-       LÓGICA DA CONFERÊNCIA DE LOTE (EXTRAÇÃO DE PDF, LEITURA & AÇÕES)
+       CONFERÊNCIA DE LOTE (LÓGICA DE PREFIXO & PDF)
        ========================================================================== */
+
+    function togglePrefixo(ativo) {
+      const containerInput = document.getElementById('container-input-prefixo');
+      if (ativo) {
+        containerInput.classList.remove('hidden');
+        containerInput.classList.add('flex');
+      } else {
+        containerInput.classList.add('hidden');
+        containerInput.classList.remove('flex');
+      }
+    }
 
     async function carregarPDFLote(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      // Armazena e trata o nome do arquivo (Remove .pdf)
       nomeArquivoPdfSemExtensao = file.name.replace(/\.[^/.]+$/, "");
 
       const descEl = document.getElementById('pdf-status-desc');
@@ -934,7 +971,6 @@
           textoCompleto += strings.join(" ") + "\n";
         }
 
-        // Extração dos números de guia
         const regexNumeros = /\b\d{8,12}\b/g;
         const matches = textoCompleto.match(regexNumeros) || [];
         const numerosUnicos = [...new Set(matches)];
@@ -992,7 +1028,6 @@
       fecharModalContar();
       escolherTipo(tipo);
 
-      // Preenche o Lote com o nome do PDF sem extensão
       const inputLote = document.getElementById('input-lote');
       if (inputLote && nomeArquivoPdfSemExtensao) {
         inputLote.value = nomeArquivoPdfSemExtensao;
@@ -1088,15 +1123,24 @@
       const input = document.getElementById('input-bipador');
       const box = document.getElementById('box-bipador');
       const msg = document.getElementById('msg-feedback');
+      
+      const switchPrefixo = document.getElementById('switch-prefixo').checked;
+      const valPrefixo = document.getElementById('input-prefixo-val').value.trim();
+
       let valor = input.value.trim();
 
       if (!valor) return;
 
-      // TRATAMENTO DE PREFIXO: Permite pesquisar a guia ignorando prefixos comuns ou buscando correspondência exata
+      // Aplica prefixo caso a chave esteja ativa
+      if (switchPrefixo && valPrefixo && !valor.startsWith(valPrefixo)) {
+        valor = valPrefixo + valor;
+      }
+
+      // Procura primeiro por correspondência exata
       let idx = guiasLote.findIndex(g => g.numero === valor);
       
+      // Caso não encontre exato, busca por terminação (flexibilidade de leitura)
       if (idx === -1) {
-        // Se não achou exato, tenta localizar se a guia termina com o valor bipado ou se o valor contiver o número cadastrado
         idx = guiasLote.findIndex(g => g.numero.endsWith(valor) || valor.endsWith(g.numero));
       }
 
