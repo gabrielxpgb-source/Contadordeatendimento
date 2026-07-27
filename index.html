@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Contador & Conferência de Lote - Web v10.2</title>
+  <title>Contador & Conferência de Lote - Web v10.1</title>
 
   <!-- Biblioteca QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -157,9 +157,16 @@
 
     #comprovante-print { display: none; }
 
-    /* ESTILO DE IMPRESSÃO ORIGINAL MANTIDO */
+    /* Impressão Térmica com Zoom Ajustado em 150% */
     @media print {
+      @page {
+        size: auto;
+        margin: 0mm 0mm 0mm 1mm;
+      }
+
       body * { visibility: hidden; }
+      #comprovante-print, #comprovante-print * { visibility: visible; }
+
       #comprovante-print {
         display: block !important;
         position: absolute;
@@ -168,7 +175,7 @@
         width: 100%;
         max-width: 80mm;
         padding: 2mm 4mm;
-        zoom: 150%;
+        zoom: 150%; /* Ajuste perfeito de escala para impressora térmica */
         transform-origin: top left;
         font-family: 'Courier New', Courier, monospace;
         font-size: 8pt;
@@ -214,7 +221,7 @@
   <header class="flex justify-between items-center px-6 py-4 w-full bg-surface-container-low border-b border-outline-variant sticky top-0 z-50">
     <div class="flex items-center gap-4 cursor-pointer" onclick="navegar('tela-inicio')">
       <span class="text-xl font-bold text-primary font-headline-md">CONTADOR</span>
-      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v10.2 WebServer</span>
+      <span class="text-xs px-2 py-1 bg-surface-container-highest rounded text-on-surface-variant font-label-sm hidden sm:inline-block">v10.1 WebServer</span>
     </div>
 
     <!-- Controles de Colunas (Tela Contador) -->
@@ -313,6 +320,7 @@
             <p class="text-sm text-on-surface-variant mt-1">Carregue o PDF da capa do lote e bipe as guias físicas para verificação automatizada.</p>
           </div>
           <div class="flex items-center gap-2">
+            <!-- BOTÃO LIMPAR -->
             <button onclick="limparConferencia(true)" class="px-4 py-2.5 bg-error-container/40 hover:bg-error-container text-error border border-error/30 rounded-xl font-label-sm transition-all flex items-center gap-2" title="Limpar PDF e zera conferência">
               <span class="material-symbols-outlined text-sm">delete_sweep</span>
               Limpar
@@ -337,6 +345,7 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+            <!-- BOTÃO COPIAR NOME DO PDF -->
             <button id="btn-copiar-nome" onclick="copiarNomePDF()" class="hidden px-4 py-3.5 bg-surface-container-highest hover:bg-outline-variant text-primary font-bold font-label-md rounded-xl transition-all items-center gap-2 border border-outline-variant">
               <span class="material-symbols-outlined text-sm">content_copy</span>
               Copiar Nome
@@ -350,7 +359,7 @@
           </div>
         </div>
 
-        <!-- Área Principal de Verificação -->
+        <!-- Área Principal de Verificação (Visível apenas após carregar PDF) -->
         <div id="area-verificacao" class="hidden flex-col gap-6">
           
           <!-- Placar e Estatísticas -->
@@ -369,7 +378,7 @@
             </div>
           </div>
 
-          <!-- Transição para Módulo de Contagem -->
+          <!-- BOTÃO CONTAR (TRANSIÇÃO DIRETA PARA MÓDULO DE CONTAGEM) -->
           <div class="bg-surface-container-high p-4 rounded-2xl border border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-primary text-2xl">calculate</span>
@@ -384,7 +393,7 @@
             </button>
           </div>
 
-          <!-- Caixa de Bipagem/Digitação -->
+          <!-- Caixa de Entrada de Bipagem/Digitação com Animação Shake -->
           <div class="bg-surface-container-high p-6 rounded-2xl border border-outline-variant shadow-md flex flex-col gap-3 transition-all" id="box-bipador">
             <label class="text-xs font-label-sm text-primary font-bold uppercase tracking-wider flex items-center gap-2">
               <span class="material-symbols-outlined text-sm">barcode_reader</span>
@@ -407,6 +416,7 @@
                 Listagem de Guias do Lote
               </h4>
               
+              <!-- Filtros de Visualização -->
               <div class="flex gap-2">
                 <button onclick="filtrarListaGuias('todas')" id="btn-filtro-todas" class="px-3 py-1.5 rounded-lg text-xs font-label-sm bg-primary text-on-primary font-bold">Todas</button>
                 <button onclick="filtrarListaGuias('pendentes')" id="btn-filtro-pendentes" class="px-3 py-1.5 rounded-lg text-xs font-label-sm bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant">Pendentes</button>
@@ -414,7 +424,10 @@
               </div>
             </div>
 
-            <div id="grid-guias-pdf" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto pr-2"></div>
+            <!-- Grid com Scroll das Guias -->
+            <div id="grid-guias-pdf" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto pr-2">
+              <!-- Elementos inseridos dinamicamente -->
+            </div>
           </div>
 
         </div>
@@ -423,7 +436,7 @@
 
   </main>
 
-  <!-- MODAL DE SELEÇÃO TIPO LOTE -->
+  <!-- MODAL DE SELEÇÃO TIPO LOTE (CONSULTA / SADT) -->
   <div id="modal-contar" class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-surface-container-high border border-outline-variant rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-5">
       <div class="flex justify-between items-center border-b border-outline-variant pb-3">
@@ -451,7 +464,7 @@
     </div>
   </div>
 
-  <!-- Resumo Fixo & Barra de Ações -->
+  <!-- Resumo Fixo & Barra de Ações do Contador -->
   <div id="summary-bar" class="fixed bottom-[48px] left-0 w-full z-40 px-6 pb-4 hidden">
     <div class="max-w-7xl mx-auto glass-summary rounded-2xl shadow-2xl border border-outline-variant p-6 flex flex-col md:flex-row justify-between items-center gap-6">
       <div class="flex items-center gap-8">
@@ -502,6 +515,7 @@
   <div id="comprovante-print"></div>
 
   <script>
+    // Inicialização da biblioteca PDF.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     const URL_PROFISSIONAIS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRCSnS7sXbLE0_zzysCTqMOpKKP6x1U1P_ruWHK8hF3RGmOGcUYJK4DoMRYXQxlGjTR4uaeSes1c4u/pub?gid=0&single=true&output=csv";
@@ -516,6 +530,7 @@
     let valorAtual = 0.0;
     let contadores = {};
 
+    // Estado da Conferência de Lote
     let guiasLote = [];
     let filtroGuiaAtual = 'todas';
     let nomeArquivoPdfSemExtensao = "";
@@ -677,318 +692,290 @@
 
     function carregarDropdownConvenios() {
       const select = document.getElementById('select-convenio');
-      select.innerHTML = '<option value="">Selecione um Convênio...</option>';
+      select.innerHTML = '<option value="">Selecione um convênio</option>';
       const lista = dados.convenios[tipoAtual] || [];
-
-      lista.forEach(item => {
+      
+      lista.forEach((c, index) => {
         const opt = document.createElement('option');
-        opt.value = item.nome;
-        opt.dataset.valor = item.valor;
-        opt.innerText = `${item.nome} - R$ ${item.valor.toFixed(2).replace('.', ',')}`;
+        opt.value = index;
+        opt.textContent = `${c.nome} | R$ ${parseFloat(c.valor).toFixed(2)}`;
         select.appendChild(opt);
       });
+      valorAtual = 0.0;
+      atualizarTotais();
     }
 
     function selecionarConvenio() {
-      const select = document.getElementById('select-convenio');
-      const selectedOpt = select.options[select.selectedIndex];
-      valorAtual = selectedOpt ? parseFloat(selectedOpt.dataset.valor) || 0.0 : 0.0;
-      atualizarResumo();
+      const idx = document.getElementById('select-convenio').value;
+      if (idx !== "") {
+        valorAtual = parseFloat(dados.convenios[tipoAtual][idx].valor);
+      } else {
+        valorAtual = 0.0;
+      }
+      atualizarTotais();
     }
 
     function iniciarContadores() {
       const grid = document.getElementById('grid-contadores');
       grid.innerHTML = '';
       contadores = {};
+      const nomes = dados.profissionais[tipoAtual] || [];
 
-      const profissionais = dados.profissionais[tipoAtual] || [];
-      profissionais.forEach(nome => {
+      nomes.forEach(nome => {
         contadores[nome] = 0;
         const card = document.createElement('div');
-        card.className = "bg-surface-container border border-outline-variant rounded-2xl p-4 flex flex-col justify-between items-center select-none cursor-pointer hover:border-primary transition-all text-center";
-        card.id = `card-${nome.replace(/\s+/g, '-')}`;
-        card.onclick = (e) => {
-          if (!e.target.closest('button')) alteraVal(nome, 1);
-        };
-
+        card.className = 'bg-surface-container-high border border-outline-variant rounded-xl p-4 flex flex-col gap-3 transition-all hover:border-primary hover:shadow-lg professional-card';
+        card.id = `card-${nome}`;
+        card.setAttribute('data-count', '0');
+        
         card.innerHTML = `
-          <span class="text-xs font-semibold text-on-surface-variant line-clamp-2 h-8 flex items-center justify-center">${nome}</span>
-          <span class="text-3xl font-bold font-headline-lg my-2 text-on-surface" id="val-${nome.replace(/\s+/g, '-')}">0</span>
-          <div class="flex items-center gap-2 w-full justify-center">
-            <button onclick="alteraVal('${nome}', -1)" class="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-error-container hover:text-on-error-container text-on-surface font-bold transition-all flex items-center justify-center">-</button>
-            <button onclick="alteraVal('${nome}', 1)" class="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container hover:opacity-90 font-bold transition-all flex items-center justify-center">+</button>
+          <span class="font-label-md text-xs text-on-surface-variant truncate font-bold text-center">${nome}</span>
+          <div class="flex-grow flex items-center justify-center py-2">
+            <span class="font-headline-xl text-3xl font-bold counter-value" id="qtd-${nome}">0</span>
+          </div>
+          <div class="flex justify-between items-center bg-surface-container-highest rounded-xl p-1 gap-1">
+            <button onclick="alterarQtd('${nome}', -1)" class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors">
+              <span class="material-symbols-outlined">remove</span>
+            </button>
+            <button onclick="alterarQtd('${nome}', 1)" class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary-container text-on-primary-container hover:opacity-90 transition-colors shadow-sm">
+              <span class="material-symbols-outlined">add</span>
+            </button>
           </div>
         `;
         grid.appendChild(card);
       });
-
-      atualizarResumo();
+      atualizarTotais();
     }
 
-    function alteraVal(nome, delta) {
-      if (!contadores.hasOwnProperty(nome)) contadores[nome] = 0;
-      contadores[nome] = Math.max(0, contadores[nome] + delta);
+    function alterarQtd(nome, delta) {
+      if (contadores[nome] + delta >= 0) {
+        contadores[nome] += delta;
+        
+        const qtdEl = document.getElementById(`qtd-${nome}`);
+        const cardEl = document.getElementById(`card-${nome}`);
+        
+        qtdEl.innerText = contadores[nome];
+        cardEl.setAttribute('data-count', contadores[nome]);
 
-      const valEl = document.getElementById(`val-${nome.replace(/\s+/g, '-')}`);
-      const cardEl = document.getElementById(`card-${nome.replace(/\s+/g, '-')}`);
-
-      if (valEl) valEl.innerText = contadores[nome];
-
-      if (cardEl) {
         if (contadores[nome] > 0) {
           cardEl.classList.add('card-active');
-          if (valEl) valEl.classList.add('text-active');
+          qtdEl.classList.add('text-active');
         } else {
           cardEl.classList.remove('card-active');
-          if (valEl) valEl.classList.remove('text-active');
+          qtdEl.classList.remove('text-active');
         }
-      }
 
-      atualizarResumo();
+        atualizarTotais();
+      }
     }
 
-    function atualizarResumo() {
-      let totalQtd = 0;
-      for (const key in contadores) {
-        totalQtd += contadores[key];
-      }
-
-      const totalVal = totalQtd * valorAtual;
-
-      document.getElementById('lbl-qtd').innerText = totalQtd;
-      document.getElementById('lbl-valor').innerText = `R$ ${totalVal.toFixed(2).replace('.', ',')}`;
+    function atualizarTotais() {
+      const qtdTotal = Object.values(contadores).reduce((a, b) => a + b, 0);
+      const valorTotal = qtdTotal * valorAtual;
+      
+      document.getElementById('lbl-qtd').innerText = qtdTotal;
+      document.getElementById('lbl-valor').innerText = `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
+    // BOTÃO ZERAR ATUALIZADO: Limpa a tela do contador E a tela de Conferência de Guia
     function zerar() {
-      if (confirm("Tem certeza de que deseja zerar a contagem atual?")) {
-        for (const key in contadores) {
-          contadores[key] = 0;
-          const valEl = document.getElementById(`val-${key.replace(/\s+/g, '-')}`);
-          const cardEl = document.getElementById(`card-${key.replace(/\s+/g, '-')}`);
-          if (valEl) {
-            valEl.innerText = 0;
-            valEl.classList.remove('text-active');
+      if(confirm('Deseja zerar todos os contadores e limpar a tela de conferência de guias?')) {
+        for (let k in contadores) {
+          contadores[k] = 0;
+          const el = document.getElementById(`qtd-${k}`);
+          if (el) el.innerText = "0";
+          
+          const cardEl = document.getElementById(`card-${k}`);
+          if (cardEl) {
+            cardEl.classList.remove('card-active');
+            cardEl.setAttribute('data-count', '0');
           }
-          if (cardEl) cardEl.classList.remove('card-active');
+          if (el) el.classList.remove('text-active');
         }
-        atualizarResumo();
+        document.getElementById('input-lote').value = '';
+        document.getElementById('select-convenio').value = '';
+        valorAtual = 0.0;
+        atualizarTotais();
+
+        // Limpa também a tela de conferência
+        limparConferencia(false);
       }
+    }
+
+    function gerarTextoComprovante() {
+      const agora = new Date().toLocaleString('pt-BR');
+      const lote = document.getElementById('input-lote').value.trim();
+      const idxConv = document.getElementById('select-convenio').value;
+      
+      let linhas = [];
+      linhas.push("≈RESUMO ATENDIMENTOS");
+      linhas.push(`Data: ${agora}`);
+      linhas.push(`Tipo: ${tipoAtual.toUpperCase()}`);
+      if (lote) linhas.push(`Lote: ${lote}`);
+      
+      if (idxConv !== "") {
+        const conv = dados.convenios[tipoAtual][idxConv];
+        linhas.push(`Convênio: ${conv.nome}`);
+        linhas.push(`Valor Un.: R$ ${valorAtual.toFixed(2)}`);
+      }
+
+      linhas.push("─".repeat(28));
+      linhas.push("Profissional           Quant.");
+      linhas.push("─".repeat(28));
+
+      let totalQtd = 0;
+      const TAMANHO_LINHA = 28;
+      const TAMANHO_QTD = 4;
+
+      for (const [nome, qtd] of Object.entries(contadores)) {
+        if (qtd > 0) {
+          const qtdStr = qtd.toString().padStart(TAMANHO_QTD, ' ');
+          const maxNomeLen = TAMANHO_LINHA - TAMANHO_QTD;
+
+          let nomeFormatado = nome;
+          if (nomeFormatado.length > maxNomeLen) {
+            nomeFormatado = nomeFormatado.substring(0, maxNomeLen - 2) + "..";
+          } else {
+            nomeFormatado = nomeFormatado.padEnd(maxNomeLen, ' ');
+          }
+
+          linhas.push(`${nomeFormatado}${qtdStr}`);
+          totalQtd += qtd;
+        }
+      }
+
+      linhas.push("─".repeat(28));
+      let totalValor = totalQtd * valorAtual;
+
+      if (valorAtual > 0) {
+        linhas.push(`Total: ${totalQtd} atendimentos`);
+        linhas.push(`Valor Total: R$ ${totalValor.toFixed(2)}`);
+      } else {
+        linhas.push(`TOTAL: ${totalQtd} atendimentos`);
+      }
+
+      linhas.push("─".repeat(28));
+      linhas.push("     ∙STATUS DO LOTE∙\n");
+      linhas.push("►PLANILHA - ►DIGITALIZADO\n");
+      linhas.push("►ENVIADO - ►ARQUIVADO\n");
+      linhas.push("Ver 10.1 WebServer\n");
+      linhas.push("Dev. GB - Since 02/2026");
+
+      return linhas.join("\n");
+    }
+
+    function imprimirComprovante() {
+      const texto = gerarTextoComprovante();
+      const lote = document.getElementById('input-lote').value.trim();
+      const container = document.getElementById('comprovante-print');
+      
+      container.innerText = texto;
+
+      if (lote) {
+        const qrDiv = document.createElement('div');
+        qrDiv.className = 'qrcode-container';
+        qrDiv.innerHTML = `<div class="qrcode-label">LOTE: ${lote}</div><div id="qrcode-target"></div>`;
+        container.appendChild(qrDiv);
+
+        new QRCode(document.getElementById("qrcode-target"), {
+          text: lote,
+          width: 65,
+          height: 65,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+
+      setTimeout(() => {
+        window.print();
+      }, 250);
+    }
+
+    function salvarArquivoTXT() {
+      const texto = gerarTextoComprovante();
+      const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `comprovante_${new Date().getTime()}.txt`;
+      a.click();
     }
 
     /* ==========================================================================
-       LÓGICA DE LEITURA DO PDF E CONFERÊNCIA
+       LÓGICA DA CONFERÊNCIA DE LOTE (EXTRAÇÃO DE PDF, LEITURA & AÇÕES)
        ========================================================================== */
 
     async function carregarPDFLote(event) {
       const file = event.target.files[0];
       if (!file) return;
 
+      // Armazena e trata o nome do arquivo (Remove .pdf)
       nomeArquivoPdfSemExtensao = file.name.replace(/\.[^/.]+$/, "");
-      document.getElementById('pdf-nome-lbl').innerText = file.name;
-      document.getElementById('pdf-status-desc').innerText = "Processando texto do PDF...";
-      document.getElementById('btn-copiar-nome').classList.remove('hidden');
-      document.getElementById('btn-copiar-nome').classList.add('flex');
+
+      const descEl = document.getElementById('pdf-status-desc');
+      const nomeLbl = document.getElementById('pdf-nome-lbl');
+      const btnCopiar = document.getElementById('btn-copiar-nome');
+
+      nomeLbl.innerText = file.name;
+      descEl.innerText = "⏳ Extraindo dados do PDF...";
+      btnCopiar.classList.remove('hidden');
+      btnCopiar.classList.add('flex');
 
       try {
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-        let fullText = "";
+        
+        let textoCompleto = "";
+        
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          const pageText = textContent.items.map(item => item.str).join(" ");
-          fullText += pageText + "\n";
+          const content = await page.getTextContent();
+          const strings = content.items.map(item => item.str);
+          textoCompleto += strings.join(" ") + "\n";
         }
 
-        extrairGuiasEConvenio(fullText);
+        // Extração dos números de guia
+        const regexNumeros = /\b\d{8,12}\b/g;
+        const matches = textoCompleto.match(regexNumeros) || [];
+        const numerosUnicos = [...new Set(matches)];
+
+        if (numerosUnicos.length === 0) {
+          alert("Nenhum número de guia foi encontrado no PDF. Certifique-se de que o arquivo possui OCR/Texto.");
+          descEl.innerText = "❌ Falha: Nenhuma guia identificada.";
+          return;
+        }
+
+        guiasLote = numerosUnicos.map(num => ({ numero: num, conferida: false }));
+
+        descEl.innerText = `🟢 Guias encontradas: ${guiasLote.length}`;
+        document.getElementById('area-verificacao').classList.remove('hidden');
+        document.getElementById('area-verificacao').classList.add('flex');
+
+        atualizarDashboardConferencia();
+        renderizarListaGuias();
+
+        setTimeout(() => {
+          document.getElementById('input-bipador').focus();
+        }, 100);
+
       } catch (err) {
         console.error(err);
-        alert("Erro ao ler o arquivo PDF. Certifique-se de que é um PDF válido.");
-        document.getElementById('pdf-status-desc').innerText = "Falha ao ler PDF";
+        alert("Erro ao ler arquivo PDF.");
+        descEl.innerText = "❌ Erro na leitura do PDF.";
       }
-    }
-
-    function extrairGuiasEConvenio(texto) {
-      const regexGuias = /\b\d{8,20}\b/g;
-      const matches = texto.match(regexGuias) || [];
-
-      // Filtra duplicados mantendo a ordem
-      const unicas = [...new Set(matches)];
-
-      guiasLote = unicas.map(codigo => ({
-        codigo: codigo,
-        conferida: false
-      }));
-
-      // Tenta detectar o convênio por semelhança no texto do PDF
-      let convenioDetectado = "Não identificado automaticamente";
-      const todosConvenios = [...dados.convenios.consulta, ...dados.convenios.sadt];
-
-      for (const conv of todosConvenios) {
-        if (texto.toLowerCase().includes(conv.nome.toLowerCase())) {
-          convenioDetectado = conv.nome;
-          break;
-        }
-      }
-
-      document.getElementById('lbl-convenio-detectado').innerText = `Convênio detectado: ${convenioDetectado}`;
-      document.getElementById('pdf-status-desc').innerText = `${guiasLote.length} guias extraídas com sucesso.`;
-
-      document.getElementById('area-verificacao').classList.remove('hidden');
-      document.getElementById('area-verificacao').classList.add('flex');
-
-      atualizarPainelPDF();
-      filtrarListaGuias('todas');
-    }
-
-    function atualizarPainelPDF() {
-      const total = guiasLote.length;
-      const conferidas = guiasLote.filter(g => g.conferida).length;
-      const pendentes = total - conferidas;
-
-      document.getElementById('lbl-total-pdf').innerText = total;
-      document.getElementById('lbl-conferidas-pdf').innerText = conferidas;
-      document.getElementById('lbl-pendentes-pdf').innerText = pendentes;
-    }
-
-    function renderizarListaGuias() {
-      const grid = document.getElementById('grid-guias-pdf');
-      grid.innerHTML = '';
-
-      const filtradas = guiasLote.filter(g => {
-        if (filtroGuiaAtual === 'pendentes') return !g.conferida;
-        if (filtroGuiaAtual === 'conferidas') return g.conferida;
-        return true;
-      });
-
-      filtradas.forEach(g => {
-        const badge = document.createElement('div');
-        badge.className = `p-3 rounded-xl border font-mono text-xs flex justify-between items-center transition-all ${
-          g.conferida
-            ? 'bg-secondary-container/20 border-secondary text-secondary'
-            : 'bg-surface-container-high border-outline-variant text-on-surface'
-        }`;
-
-        badge.innerHTML = `
-          <span>${g.codigo}</span>
-          <span class="material-symbols-outlined text-sm">${g.conferida ? 'check_circle' : 'pending'}</span>
-        `;
-        grid.appendChild(badge);
-      });
-    }
-
-    function filtrarListaGuias(filtro) {
-      filtroGuiaAtual = filtro;
-
-      ['todas', 'pendentes', 'conferidas'].forEach(f => {
-        const btn = document.getElementById(`btn-filtro-${f}`);
-        if (btn) {
-          if (f === filtro) {
-            btn.className = "px-3 py-1.5 rounded-lg text-xs font-label-sm bg-primary text-on-primary font-bold";
-          } else {
-            btn.className = "px-3 py-1.5 rounded-lg text-xs font-label-sm bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant";
-          }
-        }
-      });
-
-      renderizarListaGuias();
-    }
-
-    function processarBipagem(e) {
-      if (e.key === 'Enter') {
-        executarBipagemManual();
-      }
-    }
-
-    function tocarSomFeedback(sucesso) {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        if (sucesso) {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-          osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
-          gain.gain.setValueAtTime(0.2, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-          osc.start(ctx.currentTime);
-          osc.stop(ctx.currentTime + 0.25);
-        } else {
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(150, ctx.currentTime);
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-          osc.start(ctx.currentTime);
-          osc.stop(ctx.currentTime + 0.3);
-        }
-      } catch (err) {
-        // Áudio desativado pelo navegador se não houver interação prévia
-      }
-    }
-
-    function dispararErroBipagem(mensagem) {
-      const box = document.getElementById('box-bipador');
-      const feedback = document.getElementById('msg-feedback');
-
-      box.classList.add('shake-error');
-      feedback.className = "text-xs font-label-sm min-h-[20px] transition-all text-error font-bold flex items-center gap-1";
-      feedback.innerHTML = `<span class="material-symbols-outlined text-sm">error</span> ${mensagem}`;
-
-      tocarSomFeedback(false);
-
-      setTimeout(() => {
-        box.classList.remove('shake-error');
-      }, 500);
-    }
-
-    function executarBipagemManual() {
-      const input = document.getElementById('input-bipador');
-      const feedback = document.getElementById('msg-feedback');
-      const val = input.value.trim();
-
-      if (!val) return;
-
-      const guia = guiasLote.find(g => g.codigo === val);
-
-      if (!guia) {
-        dispararErroBipagem(`Guia ${val} não encontrada no PDF do Lote!`);
-      } else if (guia.conferida) {
-        dispararErroBipagem(`Guia ${val} JÁ foi conferida anteriormente!`);
-      } else {
-        guia.conferida = true;
-        feedback.className = "text-xs font-label-sm min-h-[20px] transition-all text-secondary font-bold flex items-center gap-1";
-        feedback.innerHTML = `<span class="material-symbols-outlined text-sm">check_circle</span> Guia ${val} conferida com sucesso!`;
-        tocarSomFeedback(true);
-        atualizarPainelPDF();
-        renderizarListaGuias();
-      }
-
-      input.value = '';
-      input.focus();
     }
 
     function copiarNomePDF() {
       if (!nomeArquivoPdfSemExtensao) return;
-      navigator.clipboard.writeText(nomeArquivoPdfSemExtensao);
-      alert(`Nome copiado para a área de transferência:\n"${nomeArquivoPdfSemExtensao}"`);
-    }
 
-    function limparConferencia(confirmar = false) {
-      if (confirmar && !confirm("Deseja realmente limpar a conferência do lote atual?")) return;
-
-      guiasLote = [];
-      nomeArquivoPdfSemExtensao = "";
-      document.getElementById('pdf-file-input').value = "";
-      document.getElementById('pdf-nome-lbl').innerText = "Capa do Lote (PDF)";
-      document.getElementById('pdf-status-desc').innerText = "Nenhum arquivo carregado ainda";
-      document.getElementById('btn-copiar-nome').classList.add('hidden');
-      document.getElementById('area-verificacao').classList.add('hidden');
-      document.getElementById('msg-feedback').innerText = "";
+      navigator.clipboard.writeText(nomeArquivoPdfSemExtensao).then(() => {
+        const btn = document.getElementById('btn-copiar-nome');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm text-secondary">check</span> Copiado!`;
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+        }, 2000);
+      });
     }
 
     function abrirModalContar() {
@@ -1005,122 +992,146 @@
       fecharModalContar();
       escolherTipo(tipo);
 
-      // Tenta preencher automaticamente o Lote e Convênio se baterem os nomes
+      // Preenche o Lote com o nome do PDF sem extensão
       const inputLote = document.getElementById('input-lote');
       if (inputLote && nomeArquivoPdfSemExtensao) {
         inputLote.value = nomeArquivoPdfSemExtensao;
       }
+    }
 
-      const selectConv = document.getElementById('select-convenio');
-      const convDetectadoTexto = document.getElementById('lbl-convenio-detectado').innerText;
-
-      for (let i = 0; i < selectConv.options.length; i++) {
-        const optText = selectConv.options[i].value;
-        if (optText && convDetectadoTexto.includes(optText)) {
-          selectConv.selectedIndex = i;
-          selecionarConvenio();
-          break;
+    function limparConferencia(solicitarConfirmacao = true) {
+      if (solicitarConfirmacao && (guiasLote.length > 0 || nomeArquivoPdfSemExtensao)) {
+        if (!confirm("Deseja realmente limpar os dados do PDF e zerar a conferência?")) {
+          return;
         }
+      }
+
+      guiasLote = [];
+      nomeArquivoPdfSemExtensao = "";
+
+      document.getElementById('pdf-file-input').value = "";
+      document.getElementById('pdf-nome-lbl').innerText = "Capa do Lote (PDF)";
+      document.getElementById('pdf-status-desc').innerText = "Nenhum arquivo carregado ainda";
+      
+      const btnCopiar = document.getElementById('btn-copiar-nome');
+      btnCopiar.classList.add('hidden');
+      btnCopiar.classList.remove('flex');
+
+      document.getElementById('area-verificacao').classList.add('hidden');
+      document.getElementById('area-verificacao').classList.remove('flex');
+
+      document.getElementById('input-bipador').value = "";
+      document.getElementById('msg-feedback').innerText = "";
+
+      atualizarDashboardConferencia();
+      renderizarListaGuias();
+    }
+
+    function atualizarDashboardConferencia() {
+      const total = guiasLote.length;
+      const conferidas = guiasLote.filter(g => g.conferida).length;
+      const pendentes = total - conferidas;
+
+      document.getElementById('lbl-total-pdf').innerText = total;
+      document.getElementById('lbl-conferidas-pdf').innerText = conferidas;
+      document.getElementById('lbl-pendentes-pdf').innerText = pendentes;
+    }
+
+    function renderizarListaGuias() {
+      const grid = document.getElementById('grid-guias-pdf');
+      grid.innerHTML = '';
+
+      let listaFiltrada = guiasLote;
+      if (filtroGuiaAtual === 'pendentes') listaFiltrada = guiasLote.filter(g => !g.conferida);
+      if (filtroGuiaAtual === 'conferidas') listaFiltrada = guiasLote.filter(g => g.conferida);
+
+      listaFiltrada.forEach(g => {
+        const item = document.createElement('div');
+        const statusClass = g.conferida 
+          ? 'bg-secondary-container/20 border-secondary text-secondary' 
+          : 'bg-surface-container-high border-outline-variant text-on-surface-variant';
+        
+        const icon = g.conferida ? 'check_circle' : 'pending';
+
+        item.className = `p-3 rounded-xl border font-mono text-sm flex items-center justify-between font-bold transition-all ${statusClass}`;
+        item.innerHTML = `
+          <span>${g.numero}</span>
+          <span class="material-symbols-outlined text-base">${icon}</span>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    function filtrarListaGuias(tipo) {
+      filtroGuiaAtual = tipo;
+      
+      ['todas', 'pendentes', 'conferidas'].forEach(t => {
+        const btn = document.getElementById(`btn-filtro-${t}`);
+        if (t === tipo) {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-label-sm bg-primary text-on-primary font-bold";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-label-sm bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant";
+        }
+      });
+
+      renderizarListaGuias();
+    }
+
+    function processarBipagem(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executarBipagemManual();
       }
     }
 
-    /* ==========================================================================
-       EXPORTAÇÃO E IMPRESSÃO (SEM ALTERAÇÃO DA IMPRESSÃO ORIGINAL)
-       ========================================================================== */
+    function executarBipagemManual() {
+      const input = document.getElementById('input-bipador');
+      const box = document.getElementById('box-bipador');
+      const msg = document.getElementById('msg-feedback');
+      const valor = input.value.trim();
 
-    function salvarArquivoTXT() {
-      const select = document.getElementById('select-convenio');
-      const convenio = select.value || "NAO_INFORMADO";
-      const lote = document.getElementById('input-lote').value || "SEM_LOTE";
+      if (!valor) return;
 
-      let relatorio = `CONTADOR DE ATENDIMENTOS - RELATÓRIO\n`;
-      relatorio += `==========================================\n`;
-      relatorio += `Tipo: ${tipoAtual.toUpperCase()}\n`;
-      relatorio += `Convênio: ${convenio}\n`;
-      relatorio += `Lote: ${lote}\n`;
-      relatorio += `Data: ${new Date().toLocaleString('pt-BR')}\n`;
-      relatorio += `==========================================\n\n`;
-      relatorio += `PROFISSIONAL | QUANTIDADE\n`;
-      relatorio += `------------------------------------------\n`;
+      const idx = guiasLote.findIndex(g => g.numero === valor);
 
-      let total = 0;
-      for (const key in contadores) {
-        if (contadores[key] > 0) {
-          relatorio += `${key.padEnd(30, ' ')} : ${contadores[key]}\n`;
-          total += contadores[key];
+      if (idx !== -1) {
+        if (guiasLote[idx].conferida) {
+          msg.innerText = `⚠️ Guia ${valor} JÁ FOI CONFERIDA anteriormente!`;
+          msg.className = "text-xs font-label-sm text-tertiary font-bold";
+        } else {
+          guiasLote[idx].conferida = true;
+          msg.innerText = `✅ Guia ${valor} CONFERIDA com sucesso!`;
+          msg.className = "text-xs font-label-sm text-secondary font-bold";
+          
+          atualizarDashboardConferencia();
+          renderizarListaGuias();
         }
-      }
+      } else {
+        msg.innerText = `❌ ATENÇÃO: Guia ${valor} NÃO ENCONTRADA na capa do lote!`;
+        msg.className = "text-xs font-label-sm text-error font-bold";
 
-      relatorio += `------------------------------------------\n`;
-      relatorio += `TOTAL DE ATENDIMENTOS: ${total}\n`;
-      relatorio += `VALOR ESTIMADO TOTAL: R$ ${(total * valorAtual).toFixed(2).replace('.', ',')}\n`;
-
-      const blob = new Blob([relatorio], { type: "text/plain;charset=utf-8" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `Contagem_${convenio}_Lote_${lote}.txt`;
-      a.click();
-    }
-
-    function imprimirComprovante() {
-      const select = document.getElementById('select-convenio');
-      const convenio = select.value || "N/A";
-      const lote = document.getElementById('input-lote').value || "N/A";
-
-      let total = 0;
-      let linhas = "";
-
-      for (const key in contadores) {
-        if (contadores[key] > 0) {
-          total += contadores[key];
-          linhas += `${key.substring(0, 18).padEnd(18, ' ')} ${String(contadores[key]).padStart(4, ' ')}\n`;
-        }
-      }
-
-      const hashData = `${tipoAtual.toUpperCase()}|${convenio}|${lote}|${total}|${new Date().toISOString()}`;
-
-      const printDiv = document.getElementById('comprovante-print');
-      printDiv.innerHTML = `
-********************************
-    CONTADOR DE ATENDIMENTOS    
-********************************
-TIPO: ${tipoAtual.toUpperCase()}
-CONVENIO: ${convenio}
-LOTE: ${lote}
-DATA: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}
---------------------------------
-PROFISSIONAL         QTD
---------------------------------
-${linhas || "Nenhum atendimento registrado.\n"}--------------------------------
-TOTAL ATENDIMENTOS: ${total}
-VALOR TOTAL: R$ ${(total * valorAtual).toFixed(2).replace('.', ',')}
-********************************
-
-<div class="qrcode-container">
-  <div class="qrcode-label">VALIDAÇÃO DIGITAL</div>
-  <div id="qrcode-target"></div>
-</div>
-      `;
-
-      setTimeout(() => {
-        new QRCode(document.getElementById("qrcode-target"), {
-          text: hashData,
-          width: 96,
-          height: 96,
-          correctLevel: QRCode.CorrectLevel.L
-        });
-
+        box.classList.add('shake-error');
         setTimeout(() => {
-          window.print();
-        }, 300);
-      }, 100);
+          box.classList.remove('shake-error');
+        }, 450);
+      }
+
+      input.value = '';
+      input.focus();
     }
 
-    // Inicialização do App
-    window.addEventListener('DOMContentLoaded', () => {
-      aplicarColunas(colunasAtuais);
-      sincronizarComPlanilha();
+    window.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        if (document.getElementById('tela-contador').classList.contains('active')) {
+          imprimirComprovante();
+        }
+      }
     });
+
+    // Inicialização
+    aplicarColunas(colunasAtuais);
+    sincronizarComPlanilha();
   </script>
 </body>
 </html>
